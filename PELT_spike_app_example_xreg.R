@@ -20,7 +20,7 @@ rain[is.na(rain)] <- 0
 # only keep the significant precipitation event
 quantile(rain, probs=c(0.95, 0.99, 0.995, 0.996, 0.997, 0.998, 0.999))
 rain2 <- rain
-rain2[rain <= 0.95] <- 0      # 0.997
+rain2[rain <= 0.95] <- 0      
 
 diff.t <- diff(which(rain2 > 0))
 rain.t <- cumsum(diff.t)[which(diff.t > 10)]
@@ -38,6 +38,7 @@ plot(smx, type="h")
 
 
 ## New cost functions for using covariates
+## Version 1: including rainfall data as indicator functions
 spike.exp.xreg1 = function(y, x, ini.par, ini.asym, low.alpha0, 
                            upper.par=NULL, thresh=0){ 
   # the data frame
@@ -47,8 +48,7 @@ spike.exp.xreg1 = function(y, x, ini.par, ini.asym, low.alpha0,
   if (length(brk) > 0) {
     rain.bin <- matrix(0, nrow=nt, ncol=length(brk))
     for (i in 1:ncol(rain.bin)) {
-      # rain.bin[brk[i]:brk1[i], i] <- 1    # old version
-      rain.bin[brk[i]:nt, i] <- 1     # new version
+      rain.bin[brk[i]:nt, i] <- 1  
     }
     segsm <- data.frame(t=1:nt, sm=y, rain.bin)
     names(segsm) <- c("t", "sm", paste0("rain.b", 1:ncol(rain.bin)))
@@ -102,7 +102,7 @@ spike.exp.xreg1 = function(y, x, ini.par, ini.asym, low.alpha0,
 }
 
 
-## Another way of including rainfall, as step function
+## Version 2: including rainfall data as step function
 spike.exp.xreg2 = function(y, x, ini.par, ini.asym, low.alpha0, 
                            upper.par=NULL, thresh=0){ 
   # the data frame
@@ -194,7 +194,7 @@ spike.nls = function(segsm, ini.asym, ini.alpha0, ini.lgamma, low.alpha0) {
 
 
 
-## PELT iterations
+## PELT iterations (I didn't write a wrapper function for this)
 data = smy
 xreg = smx      
 pen = 250
