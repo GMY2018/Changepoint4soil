@@ -5,7 +5,7 @@
 ## Changepoint analysis of soil moisture time series from
 ## field site SRER, SERC and TALL
 
-source("PELT_spike_function_nlm.R")
+source("PELT_soil_function_nlm.R")
 
 
 ## Field site SERC
