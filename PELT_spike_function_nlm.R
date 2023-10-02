@@ -2,16 +2,20 @@
 ## PELT functions using the nlmrt package
 ## -----------------------------------------
 
+## Estimating the changepoints and exponential decay model parameters
+## using PELT algorithm
 ## Solving non-linear least square using LM algorithm (Nash variant)
 ## User defined upper limits
 
-library(nlmrt)
-
-## The residual and Jacobian functions
-## For the exponential decay model
+## Two versions of the exponential decay model
 ## version 1: y_t = asym + (alpha0 - asym)*exp(-exp(lgamma)*t) + e_t
 ## version 2: y_t = asym + alpha0*exp(-exp(lgamma)*t) + e_t
 
+
+library(nlmrt)
+
+
+## The residual and Jacobian functions
 exp.res1 <- function(par, data) {
   # data = data.frame(sm, t, ...)
   # par = c(asym, alpha0, lgamma)
@@ -49,7 +53,7 @@ exp.jac2 <- function(par, data) {
 }
 
 
-## The cost function (including fitting the exp models)
+## The cost function
 spike.exp.nlm1 = function(y, ini.par, ini.asym, low.alpha0, upper.par, thresh){
   nt <- length(y)
   segsm <- data.frame(t=1:nt, sm=y)
@@ -164,8 +168,11 @@ spike.exp.nlm2 = function(y, ini.par, ini.asym, low.alpha0, upper.par, thresh){
 }
 
 
-
-## The PELT iteration (with msl update)
+## The PELT iteration
+## To initialise, input data, initial parameter values (ini.par, ini.asym), 
+## penalty parameter of PELT (pen), minimum segment length (minsl),
+## the type of cost function (spike.exp.nlm1 or spike.exp.nlm2), 
+## upper limits of parameters and threshold of the jumpsize
 spike.PELT.msl <- function(data, xreg=0, ini.par, ini.asym, pen, minsl,
                            costfun, upper.par=NULL, thresh=0, nprune=FALSE){
   # get the cost function
@@ -183,7 +190,7 @@ spike.PELT.msl <- function(data, xreg=0, ini.par, ini.asym, pen, minsl,
   lastchangefit <- c(0, rep(NA, n))
   
   # the first few time points
-  low.alpha0 = 0   # min(data, na.rm=TRUE)
+  low.alpha0 = 0  
   for (tstar in minsl:(2*minsl-1)) {
     spike.fit <- spike.exp(y=data[1:tstar], ini.par, ini.asym, low.alpha0, upper.par, thresh)
     lastchangelike[tstar+1] <- spike.fit$neglike
@@ -313,7 +320,6 @@ spike.PELT.msl <- function(data, xreg=0, ini.par, ini.asym, pen, minsl,
 }
 
 
-
 ## Reconstruct the fitted ts from the coefficient list
 spike.PELT.yhat <- function(cpt, data, xreg=0, lastchangecoef, type=1){
   
@@ -346,78 +352,6 @@ spike.PELT.yhat <- function(cpt, data, xreg=0, lastchangecoef, type=1){
   
   PELT.yhat <- list(sm.hat=sm.hat, sm.resi=sm.resi)
   return(PELT.yhat)
-}
-
-
-
-## --------------------------------------------------------
-## Use this version on Hoal data
-## Sometimes, the obs stay constant for a while
-spike.exp.nlm3 = function(y, ini.par, ini.asym, low.alpha0, upper.par, thresh){
-  # This is a different version for model version 2
-  nt <- length(y)
-  segsm <- data.frame(t=1:nt, sm=y)
-
-  if (all(y == y[1])) {
-    # if all obs are the same, ignore the segment, treat it as not converged
-    coef.vec <- NA
-    sm.hat <- NA
-    neglike <- 2e20
-    rss <- NA
-
-  } else {
-    # fit the exponential decay model
-    # the asymptotic parameter
-    if (is.null(ini.asym)) ini.asym <- round(0.8 * min(segsm$sm, na.rm=TRUE), 3)
-    # the jump and drying parameters
-    if (is.null(ini.par)) {
-      ini.alpha0 <- round(max(segsm$sm, na.rm=TRUE), 3)
-      ini.R <- try(ar(segsm$sm, order.max=1, na.action=na.pass)$ar, silent=TRUE)
-      if (length(ini.R) == 1) {
-        if ((ini.R < 1) & (ini.R > 0)) {
-          ini.lgamma <- round(log(-log(ini.R)), 3)
-        } else {
-          ini.lgamma <- -5.3  # this is roughly log(-log(0.995))
-        }
-      } else if (length(ini.R) == 0) {
-        ini.lgamma <- -5.3
-      }
-    } else {
-      ini.alpha0 <- ini.par[1]
-      ini.lgamma <- ini.par[2]
-    }
-
-    # fit the exponential model using nlfb
-    # the upper limit of the parameter is inherited from the wrapper
-    fit.nls <- try(
-      nlfb(start=list(asym=ini.asym, alpha0=ini.alpha0, lgamma=ini.lgamma),
-           resfn=exp.res2, jacfn=exp.jac2, trace=FALSE,
-           lower=c(0, thresh, -15), upper=upper.par,
-           data=segsm),
-      silent = TRUE
-    )
-    if (is.list(fit.nls)) {
-      coef.vec <- coefficients(fit.nls)
-      names(coef.vec) <- c("asym", "alpha0", "lgamma")
-      if (coef.vec[1] + coef.vec[2] > low.alpha0 + thresh) {
-        sm.hat <- coef.vec[1] + coef.vec[2] * exp(-exp(coef.vec[3])*segsm$t)
-        neglike <- nrow(segsm) * (log(mean(fit.nls$resid^2)) + 1)
-        rss <- fit.nls$ssquares
-      } else {
-        sm.hat <- NA
-        neglike <- 1e20
-        rss <- fit.nls$ssquares
-      }
-    } else {
-      coef.vec <- NA
-      sm.hat <- NA
-      neglike <- 2e20
-      rss <- NA
-    }
-  }
-
-  output <- list(neglike=neglike, coef.vec=coef.vec, rss=rss, last.hat=rev(sm.hat)[1])
-  return(output)
 }
 
 
