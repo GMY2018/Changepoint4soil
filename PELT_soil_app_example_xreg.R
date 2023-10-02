@@ -4,8 +4,7 @@
 
 ## An example of adding covariates
 
-source("PELT_spike_function_nlm.R")
-
+source("PELT_soil_function_nlm.R")
 load("Rain_SM_data_SRER.RData")
 
 
