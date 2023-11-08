@@ -2,8 +2,6 @@
 ## PELT simulation scenario 1
 ## --------------------------------
 
-
-# source("PELT_spike_simulate_function.R")
 source("PELT_spike_function_sim_nlm.R")
 
 
