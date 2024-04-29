@@ -5,7 +5,7 @@
 ## An example of adding covariates
 
 source("PELT_soil_function_nlm.R")
-load("Rain_SM_data_SRER.RData")
+load("DataExample/Rain_SM_data_SRER.RData")
 
 
 tID <- 35000:42000
