@@ -9,7 +9,7 @@ source("PELT_soil_function_nlm.R")
 
 
 ## Field site SERC
-load("PELT_SERC_data_loc1.RData")
+load("DataExample/PELT_SERC_data_loc1.RData")
 sm.dat2 <- sm.dat1[seq(2, length(time0), by=2)]   # hourly data
 nt <- length(sm.dat2)
 
@@ -41,7 +41,7 @@ for (i in 1:np) {
 
 
 ## Field site SRER
-load("PELT_SRER_data_loc4.RData")
+load("DataExample/PELT_SRER_data_loc4.RData")
 sm.dat2 <- sm.dat1[seq(2, length(time0), by=2)]
 nt <- length(sm.dat2)
 
@@ -73,7 +73,7 @@ for (i in 1:np) {
 
 
 ## Field site TALL
-load("PELT_TALL_data_loc5.RData")
+load("DataExample/PELT_TALL_data_loc5.RData")
 tID <- (time0 >= as.POSIXct("2018-02-01", tz="UTC")) & (time0 <= as.POSIXct("2019-02-01", tz="UTC"))
 time0 <- time0[tID]
 sm.dat1 <- sm.dat1[tID]
