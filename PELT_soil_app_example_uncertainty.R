@@ -7,13 +7,14 @@ library(matrixcalc)
 
 source("PELT_spike_function_nlm.R")
 
+load("DataExample/PELT_SRER_data_loc4.RData")
+load("DataExample/PELT_SRER_result_example.RData")
 
-load("PELT_SRER_data_loc4.RData")
+
+## Read the data
 sm.loc4 <- sm.dat1[seq(2, length(time0), by=2)]
 st4 <- time0[seq(2, length(time0), by=2)]
 rain4 <- rain1[seq(2, length(time0), by=2)] + rain1[seq(1, length(time0)-1, by=2)]
-
-load("PELT_SRER_result_example.RData")
 
 
 ## An example using the changepoint detection analysis 
