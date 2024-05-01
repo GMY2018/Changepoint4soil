@@ -149,3 +149,74 @@ rID <- mID[!(mID %in% dID2)]
 stdev.mat[rID, ] <- SE2.mat[rID, ]
 
 
+## Visualise the temporal dynamic of parameters
+std.asym <- stdev.mat[,1]
+std.spike <- stdev.mat[,2]
+std.gamma <- stdev.mat[,3]
+
+asym.vec0 <- srer.coef[, 1]
+spike.vec0 <- srer.coef[, 2]
+gamma.vec0 <- srer.coef[, 3]
+
+
+## Using rectangles or polygons to display SEs
+col2 <- c("grey60", "grey80")
+
+sm.fit <- spike.PELT.yhat(cpt=cpt, data=data, xreg=0, 
+                          lastchangecoef=lastchangecoef, type=2)
+
+pdf(file="Dynamic_parameter_example.pdf", width=9, height=8, pointsize=10)
+par(mfrow=c(3, 1), mar=c(4.5, 4.5, 2, 2), cex=1.1)
+
+# the changepoints
+plot(st, data, type="l", lwd=2, col="gray30", xlab="Time", ylab="Soil water content",
+     ylim=c(0.8*min(data), 1.1*max(data)))
+lines(st, sm.fit$sm.hat, col="brown3", lwd=2)
+points(st[cpt[-1]], rep(0.9*min(data), times=length(cpt)-1), pch=17, 
+       col="gray30", cex=0.6)
+
+# alpha_0, the asymptotic level parameter
+std.vec <- rep(std.asym, diff(cpt))
+asym.vec <- rep(asym.vec0, diff(cpt))
+
+plot(st, asym.vec, type="n", xlab="Time", ylab="alpha_0", ylim=c(-0.05, 0.15))
+yb <- asym.vec0-1.96*std.asym
+yb[yb < -0.2] <- -0.2
+yt <- asym.vec0+1.96*std.asym
+yt[yt > 0.4] <- 0.4
+# check if need this
+mID <- which(is.na(std.asym))
+bID <- which((asym.vec0 <= 0) | (asym.vec0 >= 0.4))
+sID <- mID[mID %in% bID]
+yt[sID] <- 0.4
+yb[sID] <- -0.2
+rect(xleft=st[cpt[-length(cpt)]+1], xright=st[cpt[-1]],
+     ybottom=yb, ytop=yt, col="grey80", border="grey80", lwd=2)
+segments(x0=st[cpt[-length(cpt)]+1], x1=st[cpt[-1]], y0=asym.vec[cpt[-1]],
+         col="grey30", lwd=3)
+
+
+# gamma, the transformed decay parameter
+std.vec <- rep(std.gamma, diff(cpt))
+gamma.vec <- rep(gamma.vec0, diff(cpt))
+tau.vec <- 1/exp(gamma.vec)/24
+
+plot(st, gamma.vec, type="n", xlab="Time", ylab="gamma", ylim=c(-15, 10))
+yb <- gamma.vec0-1.96*std.gamma
+yb[yb < -25] <- -25
+yt <- gamma.vec0+1.96*std.gamma
+yt[yt > 10] <- 10
+# check if need the following 
+mID <- which(is.na(std.gamma))
+bID <- which((gamma.vec0 <= -20) | (gamma.vec0 >= 3))
+sID <- mID[mID %in% bID]
+yt[sID] <- 10
+yb[sID] <- -25
+rect(xleft=st[cpt[-length(cpt)]+1], xright=st[cpt[-1]],
+     ybottom=yb, ytop=yt, col="grey80", border="grey80", lwd=2)
+segments(x0=st[cpt[-length(cpt)]+1], x1=st[cpt[-1]], y0=gamma.vec[cpt[-1]],
+         col="grey30", lwd=3)
+
+dev.off()
+
+
