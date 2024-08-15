@@ -1,6 +1,6 @@
 # Changepoint4soil
 
-The repository accompanies the manuscript, "A changepoint approach to modelling non-stationary soil moisture dynamics", which can be found in arXiv, https://arxiv.org/abs/2310.17546
+The repository accompanies the manuscript, "A changepoint approach to modelling non-stationary soil moisture dynamics", which can be found on arXiv, https://arxiv.org/abs/2310.17546
 
 It provides essential code and data for running the PELT algorithm to detect the changepoints in soil moisture time series.
 
